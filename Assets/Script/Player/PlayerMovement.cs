@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     private float moveInput;
     private bool isCrouching;
     public float CrouchOffset;
+    public float wallSlideSpeed;
 
 
 
@@ -24,12 +25,16 @@ public class PlayerMovement : MonoBehaviour
 
     public LayerMask whatIsGround;
     public Transform groundCheck;
-    public LayerMask whatIsCeiling;
     public Transform ceilingCheck;
+    public Transform wallCheck;
+
 
     private bool headBumped = false;
     private bool isGrounded = false;
+    private bool onWall = false;
 
+    private bool wallSliding;
+    
 
 
     [Header("Sprite Values")]
@@ -64,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
     {
         p_Input();
         p_positionCheck();
-
+        p_wallHop();
 
 
         //Debug.Log(moveInput);
@@ -75,7 +80,8 @@ public class PlayerMovement : MonoBehaviour
         p_Jump();
         crowching();
         //Debug.Log(isCrouching);
-        Debug.Log(headBumped);
+        //Debug.Log(headBumped);
+        Debug.Log(wallSliding);
         
     }
 
@@ -96,7 +102,9 @@ public class PlayerMovement : MonoBehaviour
     void p_positionCheck()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, whatIsGround);
-        headBumped = Physics2D.OverlapCircle(ceilingCheck.position, checkRadius, whatIsCeiling);
+        headBumped = Physics2D.OverlapCircle(ceilingCheck.position, checkRadius, whatIsGround);
+        onWall     = Physics2D.OverlapCircle(wallCheck.position, checkRadius, whatIsGround);
+
     }
 
 
@@ -131,8 +139,6 @@ public class PlayerMovement : MonoBehaviour
             p_crowch(false);
         }
     }
-
-
     void p_crowch(bool crouch)
     {
         BoxCollider2D collider = sprite.GetComponent<BoxCollider2D>();
@@ -170,7 +176,22 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void p_wallHop()
+    {
+        if (onWall)
+        {
+            wallSliding = true;
+        }
+        else { wallSliding = false; }
 
+        if (wallSliding)
+        {
+            rb2d.velocity = new Vector2(rb2d.velocity.x, Mathf.Clamp(rb2d.velocity.y, -wallSlideSpeed, float.MaxValue));
+        }
+
+
+
+    }
 
 
     private void OnDrawGizmos()
@@ -178,6 +199,7 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(groundCheck.position, checkRadius);
         Gizmos.DrawWireSphere(ceilingCheck.position, checkRadius);
+        Gizmos.DrawWireSphere(wallCheck.position, checkRadius);
     }
 
 
