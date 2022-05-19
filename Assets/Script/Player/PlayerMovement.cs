@@ -14,13 +14,22 @@ public class PlayerMovement : MonoBehaviour
     public float speed;
     public int jumpForce;
     private float moveInput;
-
-    private bool isGrounded = false;
-    public LayerMask whatIsGround;
-    public Transform groundCheck;
-    public float checkRadius;
     private bool isCrouching;
     public float CrouchOffset;
+
+
+
+    [Header("PositionCheck")]
+    public float checkRadius;
+
+    public LayerMask whatIsGround;
+    public Transform groundCheck;
+    public LayerMask whatIsCeiling;
+    public Transform ceilingCheck;
+
+    private bool headBumped = false;
+    private bool isGrounded = false;
+
 
 
     [Header("Sprite Values")]
@@ -47,14 +56,15 @@ public class PlayerMovement : MonoBehaviour
     {
         rb2d = gameObject.GetComponent<Rigidbody2D>();
         colliderSize = sprite.GetComponent<BoxCollider2D>().size;
-        spriteScale = sprite.transform.position;
+        spriteScale = sprite.transform.localScale;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         p_Input();
-        
+        p_positionCheck();
+
 
 
         //Debug.Log(moveInput);
@@ -64,7 +74,9 @@ public class PlayerMovement : MonoBehaviour
     {
         p_Jump();
         crowching();
-        Debug.Log(isCrouching);
+        //Debug.Log(isCrouching);
+        Debug.Log(headBumped);
+        
     }
 
     void p_Input()
@@ -80,9 +92,19 @@ public class PlayerMovement : MonoBehaviour
             flipCharacter();
         }
     }
-    void p_Jump()
+
+    void p_positionCheck()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, whatIsGround);
+        headBumped = Physics2D.OverlapCircle(ceilingCheck.position, checkRadius, whatIsCeiling);
+    }
+
+
+
+
+    void p_Jump()
+    {
+        
         if (Input.GetKeyDown(Jump) && isGrounded)
         {
             rb2d.velocity = Vector2.up * jumpForce;
@@ -114,14 +136,14 @@ public class PlayerMovement : MonoBehaviour
     void p_crowch(bool crouch)
     {
         BoxCollider2D collider = sprite.GetComponent<BoxCollider2D>();
-
+        
         if (crouch && !isCrouching)
         {
             isCrouching = true;
             //Debug.Log("CROWCH!!!");
             //make player shorter
-            collider.size = new Vector2(colliderSize.x, colliderSize.y/2);
-            sprite.transform.localScale = new Vector3(spriteScale.x, spriteScale.y * 0.5f, spriteScale.z);
+            collider.size = new Vector2(colliderSize.x, colliderSize.y);
+            sprite.transform.localScale = new Vector3(spriteScale.x, spriteScale.y * 0.6f, spriteScale.z);
 
             //sprite adjustment
             Vector3 position = sprite.transform.position;
@@ -135,6 +157,7 @@ public class PlayerMovement : MonoBehaviour
         }
         if (!crouch && isCrouching)
         {
+            if (headBumped) { return; }
             //Debug.Log("CROWCH!!!");
             //make player taller
             isCrouching = false;
@@ -143,7 +166,7 @@ public class PlayerMovement : MonoBehaviour
 
             //sprite adjustment
             Vector3 position = sprite.transform.position;
-            sprite.transform.position = new Vector3(position.x, position.y + 0.5f, position.z);
+            sprite.transform.position = new Vector3(position.x, position.y + 0.2f, position.z);
         }
     }
 
@@ -154,6 +177,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(groundCheck.position, checkRadius);
+        Gizmos.DrawWireSphere(ceilingCheck.position, checkRadius);
     }
 
 
