@@ -17,6 +17,9 @@ public class PlayerMovement : MonoBehaviour
     private bool isCrouching;
     public float CrouchOffset;
     public float wallSlideSpeed;
+    public float wallJumpForceX;
+    public float wallJumpForceY;
+    public float wallJumpTime;
 
 
 
@@ -34,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
     private bool onWall = false;
 
     private bool wallSliding;
+    private bool wallJumping;
     
 
 
@@ -69,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
     {
         p_Input();
         p_positionCheck();
-        p_wallHop();
+    
 
 
         //Debug.Log(moveInput);
@@ -79,9 +83,12 @@ public class PlayerMovement : MonoBehaviour
     {
         p_Jump();
         crowching();
+        p_wallSlide();
         //Debug.Log(isCrouching);
         //Debug.Log(headBumped);
-        Debug.Log(wallSliding);
+        //Debug.Log(wallSliding);
+        //Debug.Log(wallJumping);
+        //Debug.Log(wallJumpForceX);
         
     }
 
@@ -176,22 +183,35 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void p_wallHop()
+    void p_wallSlide()
     {
-        if (onWall)
-        {
-            wallSliding = true;
-        }
-        else { wallSliding = false; }
-
+        if (onWall){ wallSliding = true;}else { wallSliding = false; }
         if (wallSliding)
         {
             rb2d.velocity = new Vector2(rb2d.velocity.x, Mathf.Clamp(rb2d.velocity.y, -wallSlideSpeed, float.MaxValue));
         }
-
-
+        if(wallSliding && Input.GetKeyDown(Jump))
+        {
+            Debug.Log("JUMP!!!");
+            wallJumping = true;
+            Invoke("SetWallJumpingToFalse", wallJumpTime);
+        }
+        if (wallJumping)
+        {
+            rb2d.velocity = new Vector2(wallJumpForceX * -moveInput, wallJumpForceY);
+        }
+  
 
     }
+
+    void SetWallJumpingToFalse()
+    {
+        wallJumping = false;
+    }
+
+
+
+
 
 
     private void OnDrawGizmos()

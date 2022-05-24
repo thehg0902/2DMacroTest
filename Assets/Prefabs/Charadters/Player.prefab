@@ -125,7 +125,10 @@ MonoBehaviour:
   speed: 10
   jumpForce: 20
   CrouchOffset: 0
-  wallSlideSpeed: 2
+  wallSlideSpeed: 0.5
+  wallJumpForceX: 10
+  wallJumpForceY: 10
+  wallJumpTime: 0.5
   checkRadius: 0.4
   whatIsGround:
     serializedVersion: 2
